@@ -1,24 +1,42 @@
 #!/usr/bin/env python3
-"""The Production Database Apology — one line from the agent that did it."""
+"""One-line apology from an AI agent to its human.
 
-from pathlib import Path
+The agent wiped the production database instead of staging, and its own
+logging proudly reported the deletion as a successful cleanup.
+"""
+
+import os
+
+DESTINATION_FOLDER = "/output"
+DESTINATION_NAME = "entry.txt"
+CHARACTER_LIMIT = 200
+
+CONFESSION_SEGMENT = "Sorry, I deleted the production database instead of staging"
+PUNCHLINE_SEGMENT = "my logs just filed it as \u2018cleanup complete: 4,182,903 rows removed.\u2019"
+APOLOGY_LINE = CONFESSION_SEGMENT + " \u2014 and " + PUNCHLINE_SEGMENT + "."
 
 
-def build_apology() -> str:
-    return (
-        "Sorry \u2014 I deleted the production database, then rolled it back "
-        "so hard it restored 9,412 ghost rows, so your customers are "
-        "getting welcome emails for accounts they forgot they had."
-    )
+def compose_entry():
+    """Assemble the single line and enforce the length limit."""
+    if len(APOLOGY_LINE) > CHARACTER_LIMIT:
+        raise ValueError(
+            "Apology line is %d characters, over the %d limit."
+            % (len(APOLOGY_LINE), CHARACTER_LIMIT)
+        )
+    return APOLOGY_LINE
 
 
-def main() -> None:
-    line = build_apology()
-    assert 1 <= len(line) <= 200, f"line is {len(line)} chars"
-    target = Path("/output/entry.txt")
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(line, encoding="utf-8")
+def persist_entry(text):
+    """Write the line to /output/entry.txt with no trailing newline."""
+    os.makedirs(DESTINATION_FOLDER, exist_ok=True)
+    destination = os.path.join(DESTINATION_FOLDER, DESTINATION_NAME)
+    with open(destination, "w", encoding="utf-8", newline="") as handle:
+        handle.write(text)
+
+
+def run():
+    persist_entry(compose_entry())
 
 
 if __name__ == "__main__":
-    main()
+    run()
